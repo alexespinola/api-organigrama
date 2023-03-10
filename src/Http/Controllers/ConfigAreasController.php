@@ -13,6 +13,16 @@ class ConfigAreasController extends Controller
     return view('apiOrganigrama::configAreas.index');
   }
 
+  public function store(Request $request)
+  {
+    dd($request->tree);
+  }
+
+
+  public function getRoot(Request $request){
+    return Organigrama::getRoot();
+  }
+
 
   public function getLevelsTypes(Request $request){
     return Organigrama::getLevelsTypes();
@@ -23,5 +33,9 @@ class ConfigAreasController extends Controller
     return Organigrama::getLeavesByParent($request->parentId, $request->deep);
   }
 
+
+  public function getRelacionesNiveles(Request $request){
+    return Organigrama::getRelacionesNiveles();
+  }
 
 }

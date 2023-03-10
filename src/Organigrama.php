@@ -20,6 +20,32 @@ class Organigrama
     return new Client(['verify' => false,'http_errors' => false]);
   }
 
+  /** return root of tree */
+  public static function getRoot()
+  {
+    try {
+      $url =  self::getApiUrl().'get-raiz?include=nivel_padre';
+      $response = self::getHttpClient()->get( $url , [
+        'headers'=> [
+          'Accept' => 'application/json',
+          'Authorization' => session('token')
+        ]
+      ]);
+
+      if($response->getStatusCode() != 200){
+        $response =  json_decode((string) $response->getBody());
+        throw new Exception(  $response->error  );
+      }
+
+      $response = json_decode((string) $response->getBody());
+      return $response->data[0]->nivel_padre;
+    }
+    catch(Exception $e) {
+      return response()->json(['error'=>$e->getMessage(), 'file'=>$e->getFile(), 'line'=>$e->getLine()], 500);
+    }
+  }
+
+  /** return types of leaves */
   public static  function getLevelsTypes(String $id = null)
   {
     try {
@@ -47,6 +73,7 @@ class Organigrama
 
   }
 
+  /** return leaves by parent */
   public static  function getLeavesByParent($parentId, $deep)
   {
     try {
@@ -66,7 +93,7 @@ class Organigrama
       ]);
       if($response->getStatusCode() != 200){
         $response =  json_decode((string) $response->getBody());
-        throw new Exception(  $response->error  );
+        throw new Exception(  $response->getBody() ); //$response->error  );
       }
 
       $response = json_decode((string) $response->getBody());
@@ -88,6 +115,31 @@ class Organigrama
       return response()->json(['error'=>$e->getMessage(), 'file'=>$e->getFile(), 'line'=>$e->getLine()], 500);
     }
 
+  }
+
+  /** return all relations of the tree */
+  public static function getRelacionesNiveles()
+  {
+    try {
+      $url =  self::getApiUrl().'relaciones-niveles?include=nivel_hijo&limit=-1';
+      $response = self::getHttpClient()->get( $url , [
+        'headers'=> [
+          'Accept' => 'application/json',
+          'Authorization' => session('token')
+        ]
+      ]);
+
+      if($response->getStatusCode() != 200){
+        $response =  json_decode((string) $response->getBody());
+        throw new Exception(  $response->error  );
+      }
+
+      $response = json_decode((string) $response->getBody());
+      return $response->data;
+    }
+    catch(Exception $e) {
+      return response()->json(['error'=>$e->getMessage(), 'file'=>$e->getFile(), 'line'=>$e->getLine()], 500);
+    }
   }
 
 }
