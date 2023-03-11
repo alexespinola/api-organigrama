@@ -17,15 +17,21 @@
 
 <b>api-organigrama</b> es una librería que le permite integrar las áreas del organigama de SOFSE a su sistema, mediante la API que provee dicho organigrama.
 
-Esta librería provee dos interfaces graficas: una  para configurar las áreas que su sistema usará y otra para asignar áreas a los usuarios de su sitema.
-Ademas provee un helper que le ayudará a obtener datos de la API de organigramas SOFSE.
-
+Esta librería provee dos interfaces graficas: 
+Una  para configurar las áreas que su sistema usará y otra para asignar áreas a los usuarios de su sitema.
+Las rutas a estas interfaces son:
+- /config-areas
+- /areas-user/{user_id}
 
 ### Requerimientos
 - PHP: ^8.0
 - laravel: ^9
 - composer 
-- En la DB de su aplicación debe existir la tabla <b>users</b> con el campo `id`.
+- En la DB de su aplicación debe existir la tabla <b>users</b> con los campos `id` y `name`.
+
+### Dependencias
+- JQuery
+- Vue.js V3  (el archivo debe poder importar asi: `<script src="{{asset('js/vue.js')}}"></script>`)
 
 ### Instalación
 
@@ -61,21 +67,26 @@ Las vistas que provee esta librería requieren  que su aplicación tenga una vis
 Esa template debe incluir ademas los siguientes elementos:
   - un tag `<meta name="csrf-token" content="{{ csrf_token() }}" />` en la sección head del HTML.
   - un `@yield('content')` donde incrustar el HTML.
-  - un `@stack('page_scripts')` donde incrustar el js.
+  - un `@stack('page_scripts')` donde incrustar el JavaScript.
 
+
+### El helper Organigama
+Este helper que le ayudará a obtener datos de la API de organigramas SOFSE mediante peticiones HTTP.
 
 ### Instruciones para usar el helper Organigama
 
 Para obtener datos de la API organigrama pude usar el helper `src/Helpers/Organigrama` importandolo en sus controladores o donde usted lo necesite.
 
 ```php
+//Example Contreoller
+
 <?php
 
 namespace App\Http\Controller;
 
 use apiOrganigrama\Helpers\Organigrama;
 
-class MyController
+class ExampleController
 {
 
 }
