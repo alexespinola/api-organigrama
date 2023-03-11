@@ -21,26 +21,24 @@ Esta librería provee dos interfaces graficas: una  para configurar las áreas q
 Ademas provee un helper que le ayudará a obtener datos de la API de organigramas SOFSE.
 
 
-Internamente usa el protocolo de autenticación Oauth2 mediante el package ["league/oauth2-client"](https://packagist.org/packages/league/oauth2-client) 
-
-#### Requerimientos
+### Requerimientos
 - PHP: ^8.0
 - laravel: ^9
 - composer 
 - En la DB de su aplicación debe existir la tabla <b>users</b> con el campo `id`.
 
-#### Instalación
+### Instalación
 
 `composer require alexespinola/api-organigrama`
 
-#### Configuración
+### Configuración
 
 En el archivo  `.env` de su aplicaión defina la URL de la API organigrama:
 
 - `URL_API_ORGANIGRAMA=http://organigrama.sofse.gob.ar/public/api/v1/`
 
 
-##### Publicar archivo de configuración
+### Publicar archivo de configuración
 Si lo desea, puede publicar la config de esta librería con el siguiente comando:
 
 `php artisan vendor:publish --provider="apiOrganigrama\ApiOrganigramaServiceProvider" --tag="config"`
@@ -49,7 +47,7 @@ Esto crea un archivo de configuración en su aplicación: `config/apiOrganigrama
 
 
 
-##### Publicar vistas
+### Publicar vistas
 Si desea modificar las vistas que provee este paquete debe puplicarlas con el siguiente comando: 
 
 `php artisan vendor:publish --provider="apiOrganigrama\ApiOrganigramaServiceProvider" --tag="views"`
@@ -57,7 +55,7 @@ Si desea modificar las vistas que provee este paquete debe puplicarlas con el si
 Esto crea una carpeta con todas las vistas en su aplicación en `resources/views/vendor/apiOrganigrama`
 
 
-##### Instruciones para usar el helper Organigama
+### Instruciones para usar el helper Organigama
 
 Para obtener datos de la API organigrama pude usar el helper "Organigrama" importandolo en sus controladores o donde usted lo necesite.
 
