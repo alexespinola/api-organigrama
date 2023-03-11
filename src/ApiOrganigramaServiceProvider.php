@@ -22,9 +22,11 @@ class ApiOrganigramaServiceProvider extends ServiceProvider
 
     if ($this->app->runningInConsole()) {
       // Publish assets
-      $this->publishes([
-        __DIR__.'/../resources/assets' => public_path('apiOrganigrama'),
-      ], 'assets');
+      $this->publishes([__DIR__.'/../resources/assets' => public_path('apiOrganigrama')], 'assets');
+      // Publish views
+      $this->publishes([ __DIR__.'/../resources/views' => resource_path('views/vendor/apiOrganigrama')], 'views');
+      // Publish config
+      $this->publishes([__DIR__.'/../config/api.php' => config_path('apiOrganigrama.php')], 'config');
 
     }
 

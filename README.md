@@ -33,9 +33,12 @@ Ademas provee un helper que le ayudará a obtener datos de la API de organigrama
 
 ### Configuración
 
-En el archivo  `.env` de su aplicaión defina la URL de la API organigrama:
+- En el archivo  `.env` de su aplicaión defina la URL de la API organigrama:
 
-- `URL_API_ORGANIGRAMA=http://organigrama.sofse.gob.ar/public/api/v1/`
+  - `URL_API_ORGANIGRAMA=http://organigrama.sofse.gob.ar/public/api/v1/`
+
+- Ejecute el comando: `php artisan migrate`
+
 
 
 ### Publicar archivo de configuración
@@ -52,12 +55,18 @@ Si desea modificar las vistas que provee este paquete debe puplicarlas con el si
 
 `php artisan vendor:publish --provider="apiOrganigrama\ApiOrganigramaServiceProvider" --tag="views"`
 
-Esto crea una carpeta con todas las vistas en su aplicación en `resources/views/vendor/apiOrganigrama`
+Esto crea una carpeta con todas las vistas en su aplicación en `resources/views/vendor/apiOrganigrama`.
+
+Las vistas que provee esta librería requieren  que su aplicación tenga una vista base `resources/views/layouts/app.blade.php` de donde extender.
+Esa template debe incluir ademas los siguientes elementos:
+  - un tag `<meta name="csrf-token" content="{{ csrf_token() }}" />` en la sección head del HTML.
+  - un `@yield('content')` donde incrustar el HTML.
+  - un `@stack('page_scripts')` donde incrustar el js.
 
 
 ### Instruciones para usar el helper Organigama
 
-Para obtener datos de la API organigrama pude usar el helper "Organigrama" importandolo en sus controladores o donde usted lo necesite.
+Para obtener datos de la API organigrama pude usar el helper `src/Helpers/Organigrama` importandolo en sus controladores o donde usted lo necesite.
 
 ```php
 <?php
