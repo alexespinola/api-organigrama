@@ -1,6 +1,6 @@
 <?php
 
-namespace apiOrganigrama;
+namespace apiOrganigrama\Helpers;
 
 use Config;
 use Exception;

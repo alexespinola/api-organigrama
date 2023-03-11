@@ -18,9 +18,9 @@
         </div>
         <div class="card-body" >
           <div class="row">
-
+            {{-- Arbol SOFSE --}}
             <div class="col-6" style="max-height: 500px; overflow-y: auto;">
-              <h5 class="pl-2">Áreas del rganigrama SOFSE</h5> <hr>
+              <h5 class="pl-2">Áreas del organigrama SOFSE</h5> <hr>
               <div v-if="tree">
                 <node-component
                   class="pl-5"
@@ -28,8 +28,8 @@
                 </node-component>
               </div>
             </div>
-
-            <div class="col-6">
+            {{-- Arbol del sistema --}}
+            <div class="col-6" style="max-height: 500px; overflow-y: auto;">
               <h5 class="pl-2">Areas del sistema</h5> <hr>
               <div v-if="customTree" v-for="root in customTree">
                 <node-component
@@ -38,7 +38,6 @@
                 </node-component>
               </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -50,7 +49,9 @@
   <script src="{{asset('js/vue.js')}}"></script>
   <script>
     const appUrl = "{{ url('/'); }}";
+    let storedConfig = JSON.parse(`{!! $storedConfig !!}`);
 
+    //componente nodo
     const NodeComponent = {
       props: ['node'],
       data: function () {
@@ -62,11 +63,10 @@
         selectNode(){
           this.node.selected = !this.checked;
           selectNode(this.node.id);
-          // this.$emit('selectNode', this.node);
         }
       },
       template: `
-      <div style="border-left: solid 1px !important;  border-left-color: red !important;">
+      <div style="border-left: solid 1px !important;  border-left-color: #3f6791 !important;">
         <span :id="node.id" >
           <input type="checkbox" v-model="checked" @click="selectNode()">
           @{{node.nombre}}
@@ -82,6 +82,7 @@
       `
     };
 
+    // isntancia de VUE
     const { createApp } = Vue;
     const app = createApp ({
       data() {
@@ -139,15 +140,6 @@
           });
           this.levelsTypes = response;
         },
-        async getLeavesByParent(parentId, deep){
-          const response = await $.ajax({
-            type: "GET",
-            url: appUrl + '/api-organigrama-get-leaves-by-parent',
-            dataType: "json",
-            data: {parentId:parentId , deep:deep},
-          });
-          return response;
-        },
         findNode(elem, idToFind){
           var result = null;
           if(elem instanceof Array) {
@@ -180,14 +172,12 @@
           else
           {
             if(elem.hasOwnProperty('selected') && elem.selected ){
-              let tipo = this.levelsTypes.find(e=>e.id ==  elem.tipo_id);
               result.push({
                 id: elem.id,
                 nombre: elem.nombre,
                 descripcion: elem.descripcion,
                 selected: elem.selected,
                 tipo_id: elem.tipo_id,
-                tipo: tipo? tipo.nombre : null,
                 parent_id: elem.parent_id? elem.parent_id: 0,
                 level: level+1,
               });
@@ -209,6 +199,7 @@
                 nombre: child.nombre,
                 descripcion: child.descripcion,
                 tipo_id: child.tipo_id,
+                tipo: child.tipo,
                 parent_id: child.parent_id
               }
               parent.children.push(childData);
@@ -224,15 +215,23 @@
                   'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
               }
           });
-          const response = await $.ajax({
-            type: "POST",
-            url: appUrl + '/config-areas',
-            data: {tree: JSON.stringify(this.customTree)},
-            dataType: "json"
-          });
+          try{
+            const response = await $.ajax({
+              type: "POST",
+              url: appUrl + '/config-areas',
+              data: {tree: JSON.stringify(this.customTree)},
+              dataType: "json"
+            });
+            Swal.fire('Bien!', 'configuración guardada.' , 'success');
+          }
+          catch(ex){
+            console.error('Error al guardar: ',ex.responseJSON.error);
+            Swal.fire('Error al guardar', ex.responseJSON.error , 'error');
+          }
         }
       },
       async mounted() {
+        this.customTree = storedConfig;
         await this.getLevelsTypes();
         await this.getRoot();
         await this.getRelacionesNiveles();
@@ -244,6 +243,10 @@
 
     function selectNode(parentId){
       let customNodes = app.getCustomTreeNodes(app.tree);
+      for (const node of customNodes) {
+        let tipo = app.levelsTypes.find(e=>e.id ==  node.tipo_id);
+        node.tipo = tipo? tipo.nombre : null;
+      }
       app.customNodes = customNodes;
       let sortedCustomNodes = _.sortBy(customNodes, ['level']);
       let lowestLevel = sortedCustomNodes[0].level;
@@ -254,8 +257,6 @@
         customTree.push(tree);
       }
       app.customTree = customTree;
-      console.log(customTree)
     }
-
   </script>
 @endpush
