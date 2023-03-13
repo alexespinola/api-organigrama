@@ -21,7 +21,7 @@ Esta librería provee dos interfaces graficas:
 Una  para configurar las áreas que su sistema usará y otra para asignar áreas a los usuarios de su sitema.
 Las rutas a estas interfaces son:
 - /config-areas
-- /areas-user/{user_id}
+- /areas-user/{user_id}/edit
 
 ### Requerimientos
 - PHP: ^8.0
@@ -31,7 +31,7 @@ Las rutas a estas interfaces son:
 
 ### Dependencias
 - JQuery
-- Vue.js V3  (el archivo debe poder importar asi: `<script src="{{asset('js/vue.js')}}"></script>`)
+- Vue.js V3  (el archivo debe poder importarse asi: `<script src="{{asset('js/vue.js')}}"></script>`)
 
 ### Instalación
 

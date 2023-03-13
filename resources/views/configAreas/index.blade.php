@@ -253,6 +253,7 @@
       let root = customNodes.filter(e=>e.level == lowestLevel);
       let customTree = [];
       for (const r of root) {
+        delete r.selected;
         let tree = app.getCustomTree(r);
         customTree.push(tree);
       }
