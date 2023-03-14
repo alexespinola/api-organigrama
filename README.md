@@ -92,3 +92,141 @@ class ExampleController
 }
 ```
 
+### Métodos del helper Organigama
+
+```php
+
+/**
+ * Retorna el nodo raíz del arbol del organigrama de SOFSE
+ */
+Organigrama::getRoot();
+
+// Respuesta de ejemplo
+{
+  "id": 2,
+  "nombre": "presidencia",
+  "descripcion": "",
+  "tipo_id": 1,
+  "deleted_at": null
+}
+
+/**
+ * Retorna todos los nodos del organigrama de SOFSE y sus relaciones
+ */
+Organigrama::getRelacionesNiveles();
+
+// Respuesta de ejemplo
+[
+  {
+    "id": 1,
+    "profundidad": 0,
+    "id_nivel_padre": 2,
+    "id_nivel_hijo": 2,
+    "deleted_at": null,
+    "nivel_hijo": {
+      "id": 2,
+      "nombre": "presidencia",
+      "descripcion": "",
+      "tipo_id": 1,
+    }
+  },
+  {
+    "id": 2,
+    "profundidad": 1,
+    "id_nivel_padre": 2,
+    "id_nivel_hijo": 3,
+    "nivel_hijo": {
+      "id": 3,
+      "nombre": "gerencia general de asuntos jurídicos",
+      "descripcion": "",
+      "tipo_id": 2,
+  },
+  ...
+]
+
+/**
+ * Retorna los tipos de los nodos del organigrama de SOFSE
+ * @param String $tiposId - opcional
+ */
+Organigrama::getLevelsTypes( $tiposId='1,4' );
+
+// Respuesta de ejemplo
+[
+  {
+    "id": 1,
+    "nombre": "presidencia",
+    "deleted_at": null
+  },
+  {
+    "id": 4,
+    "nombre": "gerencia de línea",
+    "deleted_at": null
+  }
+]
+
+
+/**
+ * Retorna los nodos hijos de un padre del organigrama de SOFSE
+ * @param Int $parentId - required (id del padre)
+ * @param Int $deep - required (produndidad de los hijos)
+ */
+- Organigrama::getLeavesByParent($parentId=3, $deep=1);
+
+// Respuesta de ejemplo
+[
+  {
+    "id": 13,
+    "nombre": "gerencia dictámenes y asistencia jurídica",
+    "descripcion": "",
+    "tipo_id": 3,
+    "parent_id": 3
+  },
+  {
+    "id": 14,
+    "nombre": "gerencia asuntos contenciosos",
+    "descripcion": "",
+    "tipo_id": 3,
+    "parent_id": 3
+  },
+  {
+    "id": 15,
+    "nombre": "gerencia siniestros y servicios a las líneas",
+    "descripcion": "",
+    "tipo_id": 3,
+    "parent_id": 3
+  }
+]
+
+
+/**
+ * Retorna los nodos a los que pertense un usuario segun $idTipoAreas 
+ * Si $idPadres se pasa como tercer parametro se retornan solo los nodos de tipo $idTipoAreas e hijos de $idPadres
+ * @param Int $userId - required (id del usuario)
+ * @param Int $idTipoAreas - required (id de tipo de nodos)
+ * @param Array $idPadres - opcional (ids de los padres)
+ */
+Organigrama::getAreasUser( $userId=463, $idTipoAreas=6 , $idPadres=[21,501]);
+
+// Respuesta de ejemplo
+[
+  {
+    "id": 42,
+    "nombre": "obras civiles",
+    "descripcion": "",
+    "tipo_id": 6,
+    "parent_id": 501
+  },
+  {
+    "id": 43,
+    "nombre": "vías",
+    "descripcion": "",
+    "tipo_id": 6,
+    "parent_id": 21
+  },
+  ...
+]
+
+
+```
+
+

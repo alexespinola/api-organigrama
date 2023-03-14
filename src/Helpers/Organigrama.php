@@ -4,10 +4,16 @@ namespace apiOrganigrama\Helpers;
 
 use Config;
 use Exception;
+use stdClass;
 use GuzzleHttp\Client;
+use apiOrganigrama\Models\ConfigAreas;
+use apiOrganigrama\Models\AreasUser;
+
 
 class Organigrama
 {
+
+  public static $areas = [];
 
   /** return API url */
   public static  function getApiUrl()
@@ -73,7 +79,11 @@ class Organigrama
 
   }
 
-  /** return leaves by parent */
+  /**
+   * retorna los nodos hijos de un padre del organigrama de SOFSE
+   * @param Int $parentId - required (id del padre)
+   * @param Int $deep - required (produndidad de los hijos)
+   */
   public static  function getLeavesByParent($parentId, $deep)
   {
     try {
@@ -93,6 +103,7 @@ class Organigrama
       ]);
       if($response->getStatusCode() != 200){
         $response =  json_decode((string) $response->getBody());
+        dd($response);
         throw new Exception(  $response->getBody() ); //$response->error  );
       }
 
@@ -140,6 +151,45 @@ class Organigrama
     catch(Exception $e) {
       return response()->json(['error'=>$e->getMessage(), 'file'=>$e->getFile(), 'line'=>$e->getLine()], 500);
     }
+  }
+
+
+  /** return user's areas */
+  public static function getAreasUser(int $idUser, int $idTipoAreas, array $idPadre=null){
+    $areasUserConfig = AreasUser::find($idUser);
+    if(! $areasUserConfig) return null;
+    $areasUser = json_decode($areasUserConfig->areas);
+    $collection = collect(self::getTreeNodes($areasUser, [] ,$idTipoAreas, $idPadre));
+    $unique = $collection->unique('id');
+    return $unique;
+  }
+
+
+  /** funcion recursiva que retorna los nodos del usuario de determinados tipos o padres  */
+  public static function getTreeNodes($elem=null, $result=[], $idTipoArea, $idPadre=null){
+    if(is_array($elem)) {
+      foreach ($elem as $key => $e) {
+        self::getTreeNodes($e, $result, $idTipoArea, $idPadre);
+      }
+    }
+    else {
+      if(property_exists($elem, 'selected')){
+        if($elem->selected && $elem->tipo_id == $idTipoArea  && (!$idPadre || in_array($elem->parent_id, $idPadre) ) ){
+          $obj = new stdClass();
+          $obj->id = $elem->id;
+          $obj->nombre = $elem->nombre;
+          $obj->descripcion = $elem->descripcion;
+          $obj->tipo_id = $elem->tipo_id;
+          $obj->parent_id = $elem->parent_id? $elem->parent_id: 0;
+          self::$areas[] = $obj;
+        }
+      }
+
+      if(property_exists($elem, 'children')){
+        self::getTreeNodes($elem->children, $result, $idTipoArea, $idPadre);
+      }
+    }
+    return self::$areas;
   }
 
 }
