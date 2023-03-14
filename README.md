@@ -15,14 +15,14 @@
 </p>
 
 
-<b>api-organigrama</b> es una librería que le permite integrar las áreas del organigama de SOFSE a su sistema, mediante la API que provee dicho organigrama. La finalidad es que usted pueda definir a que áreas los usuarios pertenece o tinen acceso, para controlar las opciones, comportamientos o interfaces que pude ver cada usuario al navegar por su sistema.  
+<b>api-organigrama</b> es una librería que le permite integrar las áreas del organigama de SOFSE a su sistema, mediante la API que provee dicho organigrama. La finalidad es que usted pueda definir a que áreas los usuarios pertenecen o tinen acceso, para controlar las opciones, comportamientos o interfaces que pude ver cada usuario al navegar por su sistema.  
 
 
 
 ### Requerimientos
-- PHP: ^8.0
-- laravel: ^9
-- composer 
+- `PHP: ^8.0`
+- `laravel: ^9`
+- `composer`
 - En la DB de su aplicación debe existir la tabla <b>users</b> con los campos `id` y `name`.
 
 
@@ -35,19 +35,31 @@
 
 
 ### Instalación
-`composer require alexespinola/api-organigrama`
+- En el archivo  `.composer.json` de su aplicaión defina la clave `repositories` como se muestra abajo:
+
+```json
+"repositories": [
+  {
+    "type": "vcs",
+    "url": "https://gitlab.sofse.gob.ar/alejandro.espinola/api-organigrama.git"
+  }
+]
+```
+
+- En su terminal ejecute el siguiente comando: 
+  - `composer require alexespinola/api-organigrama`
 
 
 
 ### Configuración
 - En el archivo  `.env` de su aplicaión defina la URL de la API organigrama:
-
   - `URL_API_ORGANIGRAMA=http://organigrama.sofse.gob.ar/public/api/v1/`
 
 - Ejecute el comando: `php artisan migrate`
 
 
 
+### Vistas
 Esta librería provee dos interfaces graficas: 
 Una  para configurar las áreas que su sistema usará y otra para asignar áreas a los usuarios de su sitema.
 Usted desida como los usuarios navegan a estas interfaces.
