@@ -107,7 +107,6 @@ Organigrama::getRoot();
   "nombre": "presidencia",
   "descripcion": "",
   "tipo_id": 1,
-  "deleted_at": null
 }
 
 /**
@@ -122,7 +121,6 @@ Organigrama::getRelacionesNiveles();
     "profundidad": 0,
     "id_nivel_padre": 2,
     "id_nivel_hijo": 2,
-    "deleted_at": null,
     "nivel_hijo": {
       "id": 2,
       "nombre": "presidencia",
@@ -155,12 +153,10 @@ Organigrama::getLevelsTypes( $tiposId='1,4' );
   {
     "id": 1,
     "nombre": "presidencia",
-    "deleted_at": null
   },
   {
     "id": 4,
     "nombre": "gerencia de línea",
-    "deleted_at": null
   }
 ]
 
