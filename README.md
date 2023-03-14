@@ -4,6 +4,10 @@
   <img src="https://img.shields.io/static/v1?label=php&message=8.1&color=greem">
   
   <img src="https://img.shields.io/static/v1?label=Laravel&message=9.x&color=greem">  
+
+  <img src="https://img.shields.io/static/v1?label=Vue.js&message=3.x&color=greem">  
+
+  <img src="https://img.shields.io/static/v1?label=JQuery&message=3.x&color=greem"> 
     
   <a href="https://packagist.org/packages/alexespinola/login-cuentas">
     <img src="https://img.shields.io/static/v1?label=Stable&message=v1.0.0&color=blue" alt="Latest Stable Version">
