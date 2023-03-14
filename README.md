@@ -15,13 +15,9 @@
 </p>
 
 
-<b>api-organigrama</b> es una librería que le permite integrar las áreas del organigama de SOFSE a su sistema, mediante la API que provee dicho organigrama.
+<b>api-organigrama</b> es una librería que le permite integrar las áreas del organigama de SOFSE a su sistema, mediante la API que provee dicho organigrama. La finalidad es que usted pueda definir a que áreas los usuarios pertenece o tinen acceso, para controlar las opciones, comportamientos o interfaces que pude ver cada usuario al navegar por su sistema.  
 
-Esta librería provee dos interfaces graficas: 
-Una  para configurar las áreas que su sistema usará y otra para asignar áreas a los usuarios de su sitema.
-Las rutas a estas interfaces son:
-- /config-areas
-- /areas-user/{user_id}/edit
+
 
 ### Requerimientos
 - PHP: ^8.0
@@ -29,21 +25,35 @@ Las rutas a estas interfaces son:
 - composer 
 - En la DB de su aplicación debe existir la tabla <b>users</b> con los campos `id` y `name`.
 
+
+
 ### Dependencias
-- JQuery
-- Vue.js V3  (el archivo debe poder importarse asi: `<script src="{{asset('js/vue.js')}}"></script>`)
+- JQuery ( $ )
+- Lodash ( _ )
+- Vue.js V3  (el archivo debe poder importarse asi: `<script src="{{asset('js/vue.js')}}"></script>`).
+
+
 
 ### Instalación
-
 `composer require alexespinola/api-organigrama`
 
-### Configuración
 
+
+### Configuración
 - En el archivo  `.env` de su aplicaión defina la URL de la API organigrama:
 
   - `URL_API_ORGANIGRAMA=http://organigrama.sofse.gob.ar/public/api/v1/`
 
 - Ejecute el comando: `php artisan migrate`
+
+
+
+Esta librería provee dos interfaces graficas: 
+Una  para configurar las áreas que su sistema usará y otra para asignar áreas a los usuarios de su sitema.
+Usted desida como los usuarios navegan a estas interfaces.
+Las rutas a estas interfaces son:
+- /config-areas
+- /areas-user/{user_id}/edit
 
 
 
@@ -70,12 +80,17 @@ Esa template debe incluir ademas los siguientes elementos:
   - un `@stack('page_scripts')` donde incrustar el JavaScript.
 
 
+
 ### El helper Organigama
-Este helper que le ayudará a obtener datos de la API de organigramas SOFSE mediante peticiones HTTP.
+Este helper le ayudará a obtener:
+- Las áreas del organigrama de SOFSE mediante peticiones HTTP a la API que corresponda.
+- Las áreas que su sistema usa según la configuración de areas.
+- Las areas asigandas a cada usuario.
+
 
 ### Instruciones para usar el helper Organigama
 
-Para obtener datos de la API organigrama pude usar el helper `src/Helpers/Organigrama` importandolo en sus controladores o donde usted lo necesite.
+Para usar el helper `src/Helpers/Organigrama` puede importarlo en sus controladores o donde usted lo necesite.
 
 ```php
 //Example Contreoller
@@ -92,7 +107,7 @@ class ExampleController
 }
 ```
 
-### Métodos del helper Organigama
+### DOCUMENTACIÓN de los métodos del helper Organigama
 
 ```php
 
@@ -166,7 +181,7 @@ Organigrama::getLevelsTypes( $tiposId='1,4' );
  * @param Int $parentId - required (id del padre)
  * @param Int $deep - required (produndidad de los hijos)
  */
-- Organigrama::getLeavesByParent($parentId=3, $deep=1);
+Organigrama::getLeavesByParent( $parentId=3, $deep=1 );
 
 // Respuesta de ejemplo
 [
@@ -201,7 +216,7 @@ Organigrama::getLevelsTypes( $tiposId='1,4' );
  * @param Int $idTipoAreas - required (id de tipo de nodos)
  * @param Array $idPadres - opcional (ids de los padres)
  */
-Organigrama::getAreasUser( $userId=463, $idTipoAreas=6 , $idPadres=[21,501]);
+Organigrama::getAreasUser( $userId=463, $idTipoAreas=6 , $idPadres=[21,501] );
 
 // Respuesta de ejemplo
 [
