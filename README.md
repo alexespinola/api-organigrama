@@ -1,7 +1,7 @@
 ## api-organigrama 
 
 <p align="center">
-  <img src="https://img.shields.io/static/v1?label=php&message=8.1&color=greem">
+  <img src="https://img.shields.io/static/v1?label=php&message=^8.1&color=greem">
   
   <img src="https://img.shields.io/static/v1?label=Laravel&message=9.x&color=greem">  
 
