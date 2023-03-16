@@ -42,4 +42,32 @@ class AreasUserController extends Controller
   }
 
 
+  public function getRoles(Request $request)
+  {
+    $roles = DB::table('roles')->select('id', 'name')->get();
+    return $roles;
+  }
+
+
+  public function getPermissionsByArea(Request $request){
+     $user_id = $request->user_id;
+     $user = User::find($user_id);
+     Auth::login($user);
+
+     //Guarda en session los permisos
+     $res  = DB::table('users_ramales_roles')
+             ->select('permissions.name', 'users_ramales_roles.ramal_id')
+             ->join('roles', 'roles.id', '=', 'users_ramales_roles.role_id')
+             ->join('role_has_permissions', 'role_has_permissions.role_id', '=', 'roles.id')
+             ->join('permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
+             ->where('users_ramales_roles.user_id',$user_id)
+             ->get();
+
+     $permisos = array();
+     foreach ($res as $key => $r) {
+       $permisos[$r->name][] = $r->ramal_id;
+     }
+     Session::put('permisos', $permisos);
+  }
+
 }

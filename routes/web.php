@@ -11,4 +11,5 @@ Route::group(['middleware'=>['web','auth']],function(){
   Route::get('api-organigrama-get-relaciones-niveles', [ConfigAreasController::class, 'getRelacionesNiveles']);
 
   Route::resource('areas-user', AreasUserController::class);
+  Route::get('areas-user-get-roles', [AreasUserController::class, 'getRoles']);
 });

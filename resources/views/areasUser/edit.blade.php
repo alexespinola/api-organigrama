@@ -13,14 +13,18 @@
         <div class="card-header with-border">
           <h3 class="card-title">Seleccione las áreas para el usuario: {{$user->name}}</h3>
           <div class="card-tools pull-right">
-            <span @click="saveAreasUser" class="btn btn-success btn-xs">Guardar configuracíon</span>
+
           </div>
         </div>
         <div class="card-body" >
           <div class="row">
             {{-- Arbol del sistema --}}
-            <div class="col-12" style="max-height: 500px; overflow-y: auto;">
-              <h5 class="pl-2">Areas disponibles</h5> <hr>
+            <div class="col-6" style="max-height: 500px; overflow-y: auto;">
+              <h5 class="pl-2">
+                Areas del usuario
+                <span @click="saveAreasUser" class="btn btn-success btn-xs ml-5">Guardar áreas del usuario</span>
+              </h5>
+              <hr>
               <div v-if="customTree" v-for="root in customTree">
                 <node-component
                   class="pl-5"
@@ -28,6 +32,31 @@
                 </node-component>
               </div>
             </div>
+
+            {{-- Roles por área --}}
+            <div class="col-6" style="max-height: 500px; overflow-y: auto;">
+              <h5 class="pl-2">
+                Roles por área
+                <span @click="saveAreasRoles" class="btn btn-success btn-xs ml-5">Guardar roles por áreas</span>
+              </h5>
+
+              <hr>
+              <div v-if="selectedNodes" v-for="area in selectedNodes">
+                <div class="form-group">
+                  <span>@{{area.parent_name}} > <b>@{{area.nombre}}</b></span>
+                  <div>
+                    <v-select
+                      class="select-roles"
+                      :id="area.id+'_'+area.parent_id"
+                      :options="roles"
+                      {{-- @change="saveAreasRoles()" --}}
+                      >
+                    </v-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -38,12 +67,13 @@
 
 @push('page_scripts')
   <script src="{{asset('js/vue.js')}}"></script>
+
   <script>
     const appUrl = "{{ url('/'); }}";
     let storedConfig = JSON.parse(`{!! $storedConfig !!}`);
     let areasUser = JSON.parse(`{!! $areasUser !!}`);
 
-    //componente nodo
+    //componentes
     const NodeComponent = {
       props: ['node'],
       data: function () {
@@ -73,6 +103,69 @@
       `
     };
 
+    const VueSelect = {
+      props: ['options', 'value', 'name', 'id', 'clases', 'placeholder'],
+      // template: '#select2-template',
+      template: `
+        <select multiple v-bind:name="name" v-bind:id="id" v-bind:class="clases">
+          <slot></slot>
+        </select>
+      `,
+      mounted: function () {
+        var vm = this
+
+        $(this.$el)
+          // init select2
+          .select2({ data: this.ComputedOptions, 'width':'100%', placeholder: {id:'-1' ,text:this.placeholder} })
+          .val(this.value)
+          .trigger('change')
+          // emit event on change.
+          .on('change', function () {
+            vm.$emit('input', this.value)
+            vm.$emit('change')
+          })
+      },
+      methods: {
+        // change: function () {
+        //   this.$emit('change')
+        // }
+      },
+      computed: {
+        ComputedOptions: function(){
+          if (Array.isArray(this.options))
+          {
+            var options = this.options.map(function(obj) {
+              return {id: obj.id, text: obj.name };
+            });
+          }
+          else
+          {
+            let obj = this.options;
+            var options = Object.keys(obj).map(function(key) {
+              return {id: parseInt(key), text: obj[key] };
+            });
+          }
+
+          return options;
+        }
+      },
+      watch: {
+        value: function (value) {
+          // update value
+          $(this.$el)
+            .val(value)
+            .trigger('change')
+        },
+        options: function (options) {
+          // update options
+          $(this.$el).empty().select2({ data: this.ComputedOptions, 'width':'100%', placeholder: {id:'-1' ,text:this.placeholder} })
+        }
+      },
+      destroyed: function () {
+        $(this.$el).off().select2('destroy')
+      }
+    };
+
     // isntancia de VUE
     const { createApp } = Vue;
     const app = createApp ({
@@ -83,9 +176,42 @@
           customNodes: [],
           relacionesNiveles: [],
           levelsTypes: [],
+          roles: [],
+        }
+      },
+      computed: {
+        selectedNodes(){
+          let nodes = [];
+          if(this.customTree){
+            for (const branch of this.customTree) {
+              let branchNodes = this.getCustomTreeNodes(branch);
+              for (const node of branchNodes) {
+                let padre = this.relacionesNiveles.find(e=>e.id_nivel_hijo == node.parent_id);
+                node.parent_name = padre ? padre.nivel_hijo.nombre : null;
+                nodes.push(node);
+              }
+            }
+          }
+          return nodes;
         }
       },
       methods: {
+        async getRoles(){
+          const response = await $.ajax({
+            type: "GET",
+            url: appUrl + '/areas-user-get-roles',
+            dataType: "json"
+          });
+          this.roles = response;
+        },
+        async getRelacionesNiveles(){
+          const response = await $.ajax({
+            type: "GET",
+            url: appUrl + '/api-organigrama-get-relaciones-niveles',
+            dataType: "json"
+          });
+          this.relacionesNiveles = response;
+        },
         getCustomTreeNodes(elem=null, result=[], level=0){
           if(elem instanceof Array) {
             for(var i = 0; i < elem.length; i++) {
@@ -152,9 +278,18 @@
             console.error('Error al guardar: ',ex.responseJSON.error);
             Swal.fire('Error al guardar', ex.responseJSON.error , 'error');
           }
-        }
+        },
+        saveAreasRoles(){
+          $('.select-roles').each(function(index, e){
+            let id = $(e).attr('id');
+            let roles = $(e).val();
+            console.log( {id:id, roles:roles} )
+          });
+        },
       },
       async mounted() {
+        await this.getRoles();
+        await this.getRelacionesNiveles();
         if(areasUser.length)
           this.customTree = areasUser;
         else
@@ -162,7 +297,8 @@
       }
     })
     .component("node-component", NodeComponent)
-    .mount('#app')
+    .component('v-select', VueSelect)
+    .mount('#app');
 
   </script>
 @endpush
