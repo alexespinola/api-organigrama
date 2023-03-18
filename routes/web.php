@@ -12,4 +12,5 @@ Route::group(['middleware'=>['web','auth']],function(){
 
   Route::resource('areas-user', AreasUserController::class);
   Route::get('areas-user-get-roles', [AreasUserController::class, 'getRoles']);
+  Route::get('areas-user-get-premissions-by-areas', [AreasUserController::class, 'getPermissionsByAreas']);
 });
