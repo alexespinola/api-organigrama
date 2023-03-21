@@ -49,6 +49,11 @@ class AreasUserController extends Controller
   }
 
 
+  public function setPermissions($id , Request $request)
+  {
+    dd($request->all());
+  }
+
   public function getPermissionsByArea(Request $request){
      $user_id = $request->user_id;
      $user = User::find($user_id);

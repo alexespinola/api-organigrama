@@ -41,6 +41,7 @@
               </h5>
 
               <hr>
+
               <div v-if="selectedNodes" v-for="area in selectedNodes">
                 <div class="form-group">
                   <span>@{{area.parent_name}} > <b>@{{area.nombre}}</b></span>
@@ -49,7 +50,6 @@
                       class="select-roles"
                       :id="area.id+'_'+area.parent_id"
                       :options="roles"
-                      {{-- @change="saveAreasRoles()" --}}
                       >
                     </v-select>
                   </div>
@@ -188,6 +188,7 @@
               for (const node of branchNodes) {
                 let padre = this.relacionesNiveles.find(e=>e.id_nivel_hijo == node.parent_id);
                 node.parent_name = padre ? padre.nivel_hijo.nombre : null;
+                if(! nodes.find(e=>e.id == node.id && e.parent_id == node.parent_id))
                 nodes.push(node);
               }
             }
@@ -279,12 +280,36 @@
             Swal.fire('Error al guardar', ex.responseJSON.error , 'error');
           }
         },
-        saveAreasRoles(){
+        async saveAreasRoles(){
+          if(!this.customTree) return false;
+
+          let rolesXArea = [];
           $('.select-roles').each(function(index, e){
             let id = $(e).attr('id');
+            id = id.split('_');
             let roles = $(e).val();
-            console.log( {id:id, roles:roles} )
+            rolesXArea.push({id:id[0], parent_id:id[1], roles:roles});
           });
+
+          $.ajaxSetup({
+              headers: {
+                  'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+              }
+          });
+          try{
+            const response = await $.ajax({
+              type: "PUT",
+              url: appUrl + '/areas-user-set-permissions/'+this.id_user,
+              data: {rolesXArea: JSON.stringify(rolesXArea)},
+              dataType: "json"
+            });
+            Swal.fire('Bien!', 'configuración guardada.' , 'success');
+            window.location.href= appUrl+"/users/"+this.id_user+"/edit";
+          }
+          catch(ex){
+            console.error('Error al guardar: ',ex.responseJSON.error);
+            Swal.fire('Error al guardar', ex.responseJSON.error , 'error');
+          }
         },
       },
       async mounted() {
