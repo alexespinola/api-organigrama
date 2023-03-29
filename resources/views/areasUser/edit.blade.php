@@ -37,7 +37,7 @@
             <div class="col-6" style="max-height: 500px; overflow-y: auto;">
               <h5 class="pl-2">
                 Roles por área
-                <span @click="saveAreasRoles" class="btn btn-success btn-xs ml-5">Guardar roles por áreas</span>
+                <span @click="saveUserAreasRoles" class="btn btn-success btn-xs ml-5">Guardar roles por áreas</span>
               </h5>
 
               <hr>
@@ -191,8 +191,11 @@
                 let padre = this.relacionesNiveles.find(e=>e.id_nivel_hijo == node.parent_id);
                 node.parent_name = padre ? padre.nivel_hijo.nombre : null;
                 if(! nodes.find(e=>e.id == node.id && e.parent_id == node.parent_id)){
-
-                  let roles = this.user_areas_roles.find(e=>e.id_area == node.id && e.id_parent == node.parent_id);
+                  node.roles =[];
+                  let roles = this.user_areas_roles.filter(e=>e.id_area == node.id && e.id_parent == node.parent_id);
+                  if (roles){
+                    roles = roles.map(e=>{ return e.id_rol});
+                  }
                   node.roles = roles;
                   nodes.push(node);
                 }
@@ -219,7 +222,7 @@
           });
           this.relacionesNiveles = response;
         },
-        async userAreasRoles(){
+        async getUserAreasRoles(){
           const response = await $.ajax({
             type: "GET",
             url: appUrl + '/areas-user-get-user-areas-roles',
@@ -295,7 +298,7 @@
             Swal.fire('Error al guardar', ex.responseJSON.error , 'error');
           }
         },
-        async saveAreasRoles(){
+        async saveUserAreasRoles(){
           if(!this.customTree) return false;
 
           let rolesXArea = [];
@@ -314,7 +317,7 @@
           try{
             const response = await $.ajax({
               type: "PUT",
-              url: appUrl + '/areas-user-set-permissions/'+this.id_user,
+              url: appUrl + '/areas-user-set-user-areas-roles/'+this.id_user,
               data: {rolesXArea: JSON.stringify(rolesXArea)},
               dataType: "json"
             });
@@ -329,7 +332,7 @@
       },
       async mounted() {
         await this.getRoles();
-        await this.userAreasRoles();
+        await this.getUserAreasRoles();
         await this.getRelacionesNiveles();
         if(areasUser.length)
           this.customTree = areasUser;

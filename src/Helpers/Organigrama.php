@@ -2,12 +2,14 @@
 
 namespace apiOrganigrama\Helpers;
 
+use DB;
 use Config;
 use Exception;
 use stdClass;
 use GuzzleHttp\Client;
 use apiOrganigrama\Models\ConfigAreas;
 use apiOrganigrama\Models\AreasUser;
+use apiOrganigrama\Models\UsersAreasRoles;
 
 
 class Organigrama
@@ -160,8 +162,8 @@ class Organigrama
     if(! $areasUserConfig) return null;
     $areasUser = json_decode($areasUserConfig->areas);
     $collection = collect(self::getTreeNodes($areasUser, [] ,$idTipoAreas, $idPadre));
-    $unique = $collection->unique('id');
-    return $unique;
+    $collection = $collection->unique('id');
+    return $collection;
   }
 
 
@@ -190,6 +192,27 @@ class Organigrama
       }
     }
     return self::$areas;
+  }
+
+
+  public static function getAreasUserByPermissions(int $idUser, int $idTipoAreas=null, array $idPadre=null)
+  {
+    $res = DB::table('users_areas_roles')
+    ->select('permissions.name', 'users_areas_roles.id_area', 'users_areas_roles.id_parent', 'users_areas_roles.id_rol')
+    ->join('roles', 'roles.id', '=', 'users_areas_roles.id_rol')
+    ->join('role_has_permissions', 'role_has_permissions.role_id', '=', 'roles.id')
+    ->join('permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
+    ->where('users_areas_roles.id_user', $idUser)
+    ->get();
+
+    $permisos=[];
+    foreach ($res as $r) {
+      $permisos[$r->name][] = ['id_area'=>$r->id_area, 'id_parent'=>$r->id_parent ];
+    }
+
+    //TO DO detectar el metodo del controlador al que está accediendo el usuario
+    return $permisos['UsersController@inicio'];
+
   }
 
 }

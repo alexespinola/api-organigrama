@@ -55,7 +55,7 @@ class AreasUserController extends Controller
   }
 
 
-  public function setPermissions($id , Request $request)
+  public function setUserAreasRoles($id , Request $request)
   {
     try {
       $rolesXArea = json_decode($request->rolesXArea);
@@ -78,26 +78,5 @@ class AreasUserController extends Controller
     }
   }
 
-
-
-  // EN DESUSO
-  public function getPermissionsByArea(Request $request){
-    $user_id = $request->user_id;
-
-    //Guarda en session los permisos
-    $res  = DB::table('users_areas_roles')
-    ->select('permissions.name', 'users_areas_roles.area')
-    ->join('roles', 'roles.id', '=', 'users_areas_roles.role_id')
-    ->join('role_has_permissions', 'role_has_permissions.role_id', '=', 'roles.id')
-    ->join('permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
-    ->where('users_areas_roles.user_id',$user_id)
-    ->get();
-
-    $permisos = array();
-    foreach ($res as $key => $r) {
-      $permisos[$r->name][] = $r->ramal_id;
-    }
-    Session::put('permisos', $permisos);
-  }
 
 }
