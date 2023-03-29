@@ -49,11 +49,38 @@ class AreasUserController extends Controller
   }
 
 
-  public function setPermissions($id , Request $request)
-  {
-    dd($request->all());
+  public function getUserAreasRoles(Request $request){
+    $userAreasRoles = DB::table('users_areas_roles')->where('id_user', $request->id_user)->get();
+    return $userAreasRoles;
   }
 
+
+  public function setPermissions($id , Request $request)
+  {
+    try {
+      $rolesXArea = json_decode($request->rolesXArea);
+
+      $users_areas_roles=[];
+      foreach ($rolesXArea as $area) {
+        foreach ($area->roles as $role) {
+          $users_areas_roles[]= ['id_user'=>$id, 'id_rol'=>$role, 'id_area'=>$area->id,  'id_parent'=>$area->parent_id];
+        }
+      }
+
+
+      //persiste en DB
+      DB::table('users_areas_roles')->where('id_user', $id)->delete();
+      DB::table('users_areas_roles')->insert($users_areas_roles);
+      return response()->json(['status'=>200, 'message'=>'Roles por áreas guardados'], 200);
+    }
+    catch(Exception $e) {
+      return response()->json(['error'=>$e->getMessage(), 'file'=>$e->getFile(), 'line'=>$e->getLine()], 500);
+    }
+  }
+
+
+
+  // EN DESUSO
   public function getPermissionsByArea(Request $request){
      $user_id = $request->user_id;
      $user = User::find($user_id);

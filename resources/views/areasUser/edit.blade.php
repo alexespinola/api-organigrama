@@ -42,14 +42,15 @@
 
               <hr>
 
-              <div v-if="selectedNodes" v-for="area in selectedNodes">
+              <div v-if="selectedNodes" v-for="(area, index) in selectedNodes">
                 <div class="form-group">
                   <span>@{{area.parent_name}} > <b>@{{area.nombre}}</b></span>
                   <div>
                     <v-select
                       class="select-roles"
-                      :id="area.id+'_'+area.parent_id"
+                      :id="area.id+'_'+area.parent_id+'_'+index"
                       :options="roles"
+                      :value="area.roles"
                       >
                     </v-select>
                   </div>
@@ -177,6 +178,7 @@
           relacionesNiveles: [],
           levelsTypes: [],
           roles: [],
+          user_areas_roles: [],
         }
       },
       computed: {
@@ -188,8 +190,12 @@
               for (const node of branchNodes) {
                 let padre = this.relacionesNiveles.find(e=>e.id_nivel_hijo == node.parent_id);
                 node.parent_name = padre ? padre.nivel_hijo.nombre : null;
-                if(! nodes.find(e=>e.id == node.id && e.parent_id == node.parent_id))
-                nodes.push(node);
+                if(! nodes.find(e=>e.id == node.id && e.parent_id == node.parent_id)){
+
+                  let roles = this.user_areas_roles.find(e=>e.id_area == node.id && e.id_parent == node.parent_id);
+                  node.roles = roles;
+                  nodes.push(node);
+                }
               }
             }
           }
@@ -212,6 +218,15 @@
             dataType: "json"
           });
           this.relacionesNiveles = response;
+        },
+        async userAreasRoles(){
+          const response = await $.ajax({
+            type: "GET",
+            url: appUrl + '/areas-user-get-user-areas-roles',
+            data: {id_user: this.id_user},
+            dataType: "json"
+          });
+          this.user_areas_roles = response;
         },
         getCustomTreeNodes(elem=null, result=[], level=0){
           if(elem instanceof Array) {
@@ -314,6 +329,7 @@
       },
       async mounted() {
         await this.getRoles();
+        await this.userAreasRoles();
         await this.getRelacionesNiveles();
         if(areasUser.length)
           this.customTree = areasUser;
