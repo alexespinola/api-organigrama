@@ -49,11 +49,43 @@ class AreasUserController extends Controller
   }
 
 
-  public function getPermissionsByAreas(Request $request){
-     $user_id = $request->user_id;
+  public function getUserAreasRoles(Request $request){
+    $userAreasRoles = DB::table('users_areas_roles')->where('id_user', $request->id_user)->get();
+    return $userAreasRoles;
+  }
 
-     //Guarda en session los permisos
-     $res  = DB::table('users_areas_roles')
+
+  public function setPermissions($id , Request $request)
+  {
+    try {
+      $rolesXArea = json_decode($request->rolesXArea);
+
+      $users_areas_roles=[];
+      foreach ($rolesXArea as $area) {
+        foreach ($area->roles as $role) {
+          $users_areas_roles[]= ['id_user'=>$id, 'id_rol'=>$role, 'id_area'=>$area->id,  'id_parent'=>$area->parent_id];
+        }
+      }
+
+
+      //persiste en DB
+      DB::table('users_areas_roles')->where('id_user', $id)->delete();
+      DB::table('users_areas_roles')->insert($users_areas_roles);
+      return response()->json(['status'=>200, 'message'=>'Roles por áreas guardados'], 200);
+    }
+    catch(Exception $e) {
+      return response()->json(['error'=>$e->getMessage(), 'file'=>$e->getFile(), 'line'=>$e->getLine()], 500);
+    }
+  }
+
+
+
+  // EN DESUSO
+  public function getPermissionsByArea(Request $request){
+    $user_id = $request->user_id;
+
+    //Guarda en session los permisos
+    $res  = DB::table('users_areas_roles')
     ->select('permissions.name', 'users_areas_roles.area')
     ->join('roles', 'roles.id', '=', 'users_areas_roles.role_id')
     ->join('role_has_permissions', 'role_has_permissions.role_id', '=', 'roles.id')
@@ -61,11 +93,11 @@ class AreasUserController extends Controller
     ->where('users_areas_roles.user_id',$user_id)
     ->get();
 
-     $permisos = array();
-     foreach ($res as $key => $r) {
-       $permisos[$r->name][] = $r->ramal_id;
-     }
-     Session::put('permisos', $permisos);
+    $permisos = array();
+    foreach ($res as $key => $r) {
+      $permisos[$r->name][] = $r->ramal_id;
+    }
+    Session::put('permisos', $permisos);
   }
 
 }

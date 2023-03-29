@@ -41,15 +41,16 @@
               </h5>
 
               <hr>
-              <div v-if="selectedNodes" v-for="area in selectedNodes">
+
+              <div v-if="selectedNodes" v-for="(area, index) in selectedNodes">
                 <div class="form-group">
                   <span>@{{area.parent_name}} > <b>@{{area.nombre}}</b></span>
                   <div>
                     <v-select
                       class="select-roles"
-                      :id="area.id+'_'+area.parent_id"
+                      :id="area.id+'_'+area.parent_id+'_'+index"
                       :options="roles"
-                      {{-- @change="saveAreasRoles()" --}}
+                      :value="area.roles"
                       >
                     </v-select>
                   </div>
@@ -177,6 +178,7 @@
           relacionesNiveles: [],
           levelsTypes: [],
           roles: [],
+          user_areas_roles: [],
         }
       },
       computed: {
@@ -188,7 +190,12 @@
               for (const node of branchNodes) {
                 let padre = this.relacionesNiveles.find(e=>e.id_nivel_hijo == node.parent_id);
                 node.parent_name = padre ? padre.nivel_hijo.nombre : null;
-                nodes.push(node);
+                if(! nodes.find(e=>e.id == node.id && e.parent_id == node.parent_id)){
+
+                  let roles = this.user_areas_roles.find(e=>e.id_area == node.id && e.id_parent == node.parent_id);
+                  node.roles = roles;
+                  nodes.push(node);
+                }
               }
             }
           }
@@ -211,6 +218,15 @@
             dataType: "json"
           });
           this.relacionesNiveles = response;
+        },
+        async userAreasRoles(){
+          const response = await $.ajax({
+            type: "GET",
+            url: appUrl + '/areas-user-get-user-areas-roles',
+            data: {id_user: this.id_user},
+            dataType: "json"
+          });
+          this.user_areas_roles = response;
         },
         getCustomTreeNodes(elem=null, result=[], level=0){
           if(elem instanceof Array) {
@@ -279,16 +295,41 @@
             Swal.fire('Error al guardar', ex.responseJSON.error , 'error');
           }
         },
-        saveAreasRoles(){
+        async saveAreasRoles(){
+          if(!this.customTree) return false;
+
+          let rolesXArea = [];
           $('.select-roles').each(function(index, e){
             let id = $(e).attr('id');
+            id = id.split('_');
             let roles = $(e).val();
-            console.log( {id:id, roles:roles} )
+            rolesXArea.push({id:id[0], parent_id:id[1], roles:roles});
           });
+
+          $.ajaxSetup({
+              headers: {
+                  'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+              }
+          });
+          try{
+            const response = await $.ajax({
+              type: "PUT",
+              url: appUrl + '/areas-user-set-permissions/'+this.id_user,
+              data: {rolesXArea: JSON.stringify(rolesXArea)},
+              dataType: "json"
+            });
+            Swal.fire('Bien!', 'configuración guardada.' , 'success');
+            window.location.href= appUrl+"/users/"+this.id_user+"/edit";
+          }
+          catch(ex){
+            console.error('Error al guardar: ',ex.responseJSON.error);
+            Swal.fire('Error al guardar', ex.responseJSON.error , 'error');
+          }
         },
       },
       async mounted() {
         await this.getRoles();
+        await this.userAreasRoles();
         await this.getRelacionesNiveles();
         if(areasUser.length)
           this.customTree = areasUser;
