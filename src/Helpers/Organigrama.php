@@ -17,16 +17,19 @@ class Organigrama
 
   public static $areas = [];
 
+
   /** return API url */
   public static  function getApiUrl()
   {
     return Config::get('apiOrganigrama.apiUrl');
   }
 
+
   /** return a client HTTP */
   public static function getHttpClient(){
     return new Client(['verify' => false,'http_errors' => false]);
   }
+
 
   /** return root of tree */
   public static function getRoot()
@@ -52,6 +55,7 @@ class Organigrama
       return response()->json(['error'=>$e->getMessage(), 'file'=>$e->getFile(), 'line'=>$e->getLine()], 500);
     }
   }
+
 
   /** return types of leaves */
   public static  function getLevelsTypes(String $id = null)
@@ -80,6 +84,7 @@ class Organigrama
     }
 
   }
+
 
   /**
    * retorna los nodos hijos de un padre del organigrama de SOFSE
@@ -130,6 +135,7 @@ class Organigrama
 
   }
 
+
   /** return all relations of the tree */
   public static function getRelacionesNiveles()
   {
@@ -167,6 +173,56 @@ class Organigrama
   }
 
 
+  public static function getAreasUserByPermissions(int $idUser, String $method=null, int $idTipoAreas=null, array $idPadre=null)
+  {
+    $userAreasRoles = DB::table('users_areas_roles')
+    ->select('permissions.name', 'users_areas_roles.id_area', 'users_areas_roles.id_parent', 'users_areas_roles.id_rol')
+    ->join('roles', 'roles.id', '=', 'users_areas_roles.id_rol')
+    ->join('role_has_permissions', 'role_has_permissions.role_id', '=', 'roles.id')
+    ->join('permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
+    ->where('users_areas_roles.id_user', $idUser)
+    ->get();
+
+    $permisos=[];
+    foreach ($userAreasRoles as $r) {
+      $permisos[$r->name][] = ['id_area'=>$r->id_area, 'id_parent'=>$r->id_parent ];
+    }
+
+    // Metodo del controlador al que está accediendo el usuario
+    $currentAction = \Route::currentRouteAction();
+    $controllerMethod = preg_replace('/.*\\\/', '', $currentAction);
+    if($method) $controllerMethod = $method;
+
+    // Areas permitidas segun metodo del controlador al que está accediendo el usuario
+    $userAreasByPermisos=[];
+    if(isset($permisos[$controllerMethod])){
+      $userAreasByPermisos = $permisos[$controllerMethod];
+    }
+
+    $userAreas = self::getAreasUser($idUser, $idTipoAreas, $idPadre);
+
+    $response=[];
+    foreach ($userAreas as $area) {
+      foreach ($userAreasByPermisos as $areaPermitida) {
+        if ($areaPermitida['id_area'] == $area->id) {
+          if($idPadre){
+            if ($areaPermitida['id_parent'] == $area->parent_id){
+              $response[] = $area;
+              break;
+            }
+          }
+          else{
+            $response[] = $area;
+            break;
+          }
+        }
+      }
+    }
+
+    return $response;
+  }
+
+
   /** funcion recursiva que retorna los nodos del usuario de determinados tipos o padres  */
   public static function getTreeNodes($elem=null, $result=[], $idTipoArea, $idPadre=null){
     if(is_array($elem)) {
@@ -195,24 +251,6 @@ class Organigrama
   }
 
 
-  public static function getAreasUserByPermissions(int $idUser, int $idTipoAreas=null, array $idPadre=null)
-  {
-    $res = DB::table('users_areas_roles')
-    ->select('permissions.name', 'users_areas_roles.id_area', 'users_areas_roles.id_parent', 'users_areas_roles.id_rol')
-    ->join('roles', 'roles.id', '=', 'users_areas_roles.id_rol')
-    ->join('role_has_permissions', 'role_has_permissions.role_id', '=', 'roles.id')
-    ->join('permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
-    ->where('users_areas_roles.id_user', $idUser)
-    ->get();
 
-    $permisos=[];
-    foreach ($res as $r) {
-      $permisos[$r->name][] = ['id_area'=>$r->id_area, 'id_parent'=>$r->id_parent ];
-    }
-
-    //TO DO detectar el metodo del controlador al que está accediendo el usuario
-    return $permisos['UsersController@inicio'];
-
-  }
 
 }

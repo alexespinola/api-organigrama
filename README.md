@@ -39,7 +39,7 @@
 
 
 ### Instalación
-- En el archivo  `.composer.json` de su aplicaión defina la clave `repositories` como se muestra abajo:
+- En el archivo  `.composer.json` de su aplicaión defina la clave `repositories` si es que no existe y dentro defina un objeto como se muestra abajo:
 
 ```json
 "repositories": [
@@ -233,6 +233,36 @@ Organigrama::getLeavesByParent( $parentId=3, $deep=1 );
  * @param Array $idPadres - opcional (ids de los padres)
  */
 Organigrama::getAreasUser( $userId=463, $idTipoAreas=6 , $idPadres=[21,501] );
+
+// Respuesta de ejemplo
+[
+  {
+    "id": 42,
+    "nombre": "obras civiles",
+    "descripcion": "",
+    "tipo_id": 6,
+    "parent_id": 501
+  },
+  {
+    "id": 43,
+    "nombre": "vías",
+    "descripcion": "",
+    "tipo_id": 6,
+    "parent_id": 21
+  },
+  ...
+]
+
+
+/**
+ * Retorna los nodos a los que puede acceder un usuario segun $idTipoAreas sus permisos y el método y controlador que la aplicacion usa en cada petición 
+ * Si $idPadres se pasa como cuarto parametro se retornan solo los nodos de tipo $idTipoAreas e hijos de $idPadres
+ * @param Int $userId - required (id del usuario)
+ * @param String,Null $method - required ( controlador@metodo alternativo al que se está utilizando ) si el valor es null, entonces tomará el que el framework usa en cada petición
+ * @param Int $idTipoAreas - required (id de tipo de nodos)
+ * @param Array $idPadres - opcional (ids de los padres)
+ */
+Organigrama::getAreasUserByPermissions( $userId=463, $method=null, $idTipoAreas=6 , $idPadres=[21,501] );
 
 // Respuesta de ejemplo
 [
